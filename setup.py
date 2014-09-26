@@ -10,4 +10,5 @@ setup(
         long_description='mysql connection lib',
         packages=['mymgr'],
         license='GPL',
+        requires=['mysql_connector_python']
         )
