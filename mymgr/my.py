@@ -20,7 +20,7 @@ class MyMgr:
         m.tquery(sql,params,proc)使用线程执行查询，其中proc为回调函数
     '''
     #采用字典保存数据用于跨模块共享连接数据
-    __data={
+    _data={
         'config':None,
         'connection':None,
         'cursor':None,
@@ -29,34 +29,34 @@ class MyMgr:
 
     @property
     def connected(self):
-        return self.__data['connected']
+        return self._data['connected']
 
     @property
     def cursor(self):
-        return self.__data['cursor']
+        return self._data['cursor']
 
     def connect(self,**kwargs):
         if self.connected:
             self.disconnect()
         if kwargs:
-            self.__data['config']=kwargs
+            self._data['config']=kwargs
         try:
-            self.__data['connection']=connector.connect(
-                **self.__data['config'])
+            self._data['connection']=connector.connect(
+                **self._data['config'])
         finally:
-            self.__data['cursor']=self.__data['connection'].cursor()
-            self.__data['connected']=True
+            self._data['cursor']=self._data['connection'].cursor()
+            self._data['connected']=True
 
     def disconnect(self):
         try:
             if self.cursor:
                 self.cursor.close()
-            if self.__data['connection']:
-                self.__data['connection'].close()
+            if self._data['connection']:
+                self._data['connection'].close()
         finally:
-            self.__data['cursor']=None
-            self.__data['connection']=None
-            self.__data['connected']=False
+            self._data['cursor']=None
+            self._data['connection']=None
+            self._data['connected']=False
     
     def call_proc(self,proc_name,params=None,call_back=None):
         if self.connected:
@@ -67,7 +67,7 @@ class MyMgr:
             return d
 
     def commit(self):
-        self.__data['connection'].commit()
+        self._data['connection'].commit()
         
     def execute(self,sql,params=None):
         '''
@@ -135,13 +135,13 @@ class MyMgr:
         if self.connected:
             try:
                 m=MyMgr()
-                m.__data=={
+                m._data={
                     'config':None,
                     'connection':None,
                     'cursor':None,
                     'connected':False,
                 }
-                m.connect(**self.__data.config)
+                m.connect(**self._data['config'])
                 Thread(target=func(m,*arg)).start()
             finally:
                 m.disconnect()
@@ -152,9 +152,9 @@ class MyMgr:
         '''
         self.exec_thread(MyMgr.exec_many,(sql,param_list))
 
-    def tquery(self,sql,params=None,proc=None):
+    def tquery(self,sql,params=None,call_back=None):
         '''
         使用线程执行查询，参数说明同query
         '''
-        self.exec_thread(MyMgr.query,[sql,params,proc])
+        self.exec_thread(MyMgr.query,[sql,params,call_back])
 
