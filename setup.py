@@ -10,5 +10,4 @@ setup(
         long_description='mymgr',
         packages=['mymgr'],
         license='GPL',
-        requires=['']
         )
